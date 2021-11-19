@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package blog;
+
+// specify the import path for the generated code for this file
+// i.e. "I want protoc generated code based on this proto file to appear in the rpc/blog folder"
+option go_package = "rpc/blog";
+
+// define the shape of a Blog 
+
+message Blog {
+  string title = 2;
+  string content = 3;
+}

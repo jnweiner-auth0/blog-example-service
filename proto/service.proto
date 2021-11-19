@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package service;
+
+option go_package = "rpc/blog";
+
+// define the shape of our API
+
+message CreateBlogRequest {
+  string title = 2;
+  string content = 3;
+}
+
+message CreateBlogResponse {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message GetBlogRequest {
+  string id = 1;
+}
+
+message GetBlogResponse {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message UpdateBlogRequest {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message UpdateBlogResponse {
+  string id = 1;
+  string title = 2;
+  string content = 3;
+}
+
+message DeleteBlogRequest {
+  string id =1;
+}
+
+message DeleteBlogResponse {
+  string id = 1;
+}
+
+message ListBlogRequest {
+  int64 limit = 1;
+}
+
+message ListBlogResponse {
+  repeated CreateBlogResponse blogs = 1;
+}
+
+service BlogService {
+  rpc CreateBlog(CreateBlogRequest) returns (CreateBlogResponse);
+  rpc GetBlog(GetBlogRequest) returns (GetBlogResponse);
+  rpc UpdateBlog(UpdateBlogRequest) returns (UpdateBlogResponse);
+  rpc DeleteBlog(DeleteBlogRequest) returns (DeleteBlogResponse);
+  rpc ListBlog(ListBlogRequest) returns (ListBlogResponse);
+}
