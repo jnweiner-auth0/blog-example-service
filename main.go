@@ -29,5 +29,6 @@ func startServer() {
 }
 
 func main() {
+	config.ConnectToDB()
 	startServer()
 }
