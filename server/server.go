@@ -7,10 +7,19 @@ import (
 	"fmt"
 
 	"github.com/twitchtv/twirp"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Server struct{}
+
+// docs on bson struct tags and unmarshalling: https://docs.mongodb.com/drivers/go/current/fundamentals/bson/
+type BlogItem struct {
+	Id      primitive.ObjectID `bson:"_id"`
+	Title   string             `bson:"title"`
+	Content string             `bson:"content"`
+}
 
 // use the BlogService interface generated in service.twirp.go as guideline to stub out the expected functions
 // helpful Mongo driver docs: https://docs.mongodb.com/drivers/go/current/fundamentals/crud/
@@ -40,8 +49,30 @@ func (*Server) CreateBlog(ctx context.Context, req *blogProto.CreateBlogRequest)
 }
 
 func (*Server) GetBlog(ctx context.Context, req *blogProto.GetBlogRequest) (*blogProto.GetBlogResponse, error) {
-	fmt.Println("In GetBlog")
-	return &blogProto.GetBlogResponse{}, nil
+	id := req.GetId()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, twirp.NewError(twirp.InvalidArgument, "Invalid blog ID")
+	}
+
+	filter := bson.D{{Key: "_id", Value: oid}}
+
+	result := BlogItem{}
+
+	// Decode() method unmarshals BSON into result
+	unmarshal_err := config.Collection.FindOne(context.TODO(), filter).Decode(&result)
+	if unmarshal_err != nil {
+		if unmarshal_err == mongo.ErrNoDocuments {
+			return nil, twirp.NewError(twirp.NotFound, fmt.Sprintf("No documents were found for id: %v", id))
+		}
+		return nil, twirp.NewError(twirp.NotFound, fmt.Sprintf("There was an error finding a blog with ID: %v \nError: %v", id, unmarshal_err))
+	}
+
+	return &blogProto.GetBlogResponse{
+		Id:      id,
+		Title:   result.Title,
+		Content: result.Content,
+	}, nil
 }
 
 func (*Server) UpdateBlog(ctx context.Context, req *blogProto.UpdateBlogRequest) (*blogProto.UpdateBlogResponse, error) {
