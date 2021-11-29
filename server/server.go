@@ -76,8 +76,31 @@ func (*Server) GetBlog(ctx context.Context, req *blogProto.GetBlogRequest) (*blo
 }
 
 func (*Server) UpdateBlog(ctx context.Context, req *blogProto.UpdateBlogRequest) (*blogProto.UpdateBlogResponse, error) {
-	fmt.Println("In UpdateBlog")
-	return &blogProto.UpdateBlogResponse{}, nil
+	id := req.GetId()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, twirp.NewError(twirp.InvalidArgument, "Invalid blog ID")
+	}
+
+	filter := bson.D{{Key: "_id", Value: oid}}
+
+	newBlog := &blogProto.Blog{
+		Title:   req.GetTitle(),
+		Content: req.GetContent(),
+	}
+
+	update := bson.D{{Key: "$set", Value: bson.M{"title": newBlog.Title, "content": newBlog.Content}}}
+
+	result, update_err := config.Collection.UpdateOne(context.TODO(), filter, update)
+	if update_err != nil || result.MatchedCount == 0 {
+		return nil, twirp.NewError(twirp.InvalidArgument, fmt.Sprintf("Blog id: %v could not be updated with %v", id, newBlog))
+	}
+
+	return &blogProto.UpdateBlogResponse{
+		Id:      oid.Hex(),
+		Title:   req.GetTitle(),
+		Content: req.GetContent(),
+	}, nil
 }
 
 func (*Server) DeleteBlog(ctx context.Context, req *blogProto.DeleteBlogRequest) (*blogProto.DeleteBlogResponse, error) {
