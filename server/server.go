@@ -104,8 +104,21 @@ func (*Server) UpdateBlog(ctx context.Context, req *blogProto.UpdateBlogRequest)
 }
 
 func (*Server) DeleteBlog(ctx context.Context, req *blogProto.DeleteBlogRequest) (*blogProto.DeleteBlogResponse, error) {
-	fmt.Println("In DeleteBlog")
-	return &blogProto.DeleteBlogResponse{}, nil
+	id := req.GetId()
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, twirp.NewError(twirp.InvalidArgument, "Invalid blog ID")
+	}
+	filter := bson.D{{Key: "_id", Value: oid}}
+
+	result, delete_err := config.Collection.DeleteOne(context.TODO(), filter)
+	if delete_err != nil || result.DeletedCount != 1 {
+		return nil, twirp.NewError(twirp.InvalidArgument, fmt.Sprintf("Unable to delete blog with ID: %v", id))
+	}
+
+	return &blogProto.DeleteBlogResponse{
+		Id: id,
+	}, nil
 }
 
 func (*Server) ListBlog(ctx context.Context, req *blogProto.ListBlogRequest) (*blogProto.ListBlogResponse, error) {
