@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Server struct{}
@@ -122,6 +123,43 @@ func (*Server) DeleteBlog(ctx context.Context, req *blogProto.DeleteBlogRequest)
 }
 
 func (*Server) ListBlog(ctx context.Context, req *blogProto.ListBlogRequest) (*blogProto.ListBlogResponse, error) {
-	fmt.Println("In ListBlog")
-	return &blogProto.ListBlogResponse{}, nil
+	filter := bson.D{}
+	limit := int64(25)
+
+	if req.GetLimit() > 0 {
+		limit = req.GetLimit()
+	}
+
+	options := &options.FindOptions{
+		Limit: &limit,
+	}
+
+	var results []BlogItem
+
+	cursor, find_err := config.Collection.Find(context.TODO(), filter, options)
+	if find_err != nil {
+		if find_err == mongo.ErrNoDocuments {
+			return nil, twirp.NewError(twirp.NotFound, "No documents were found")
+		}
+		return nil, twirp.NewError(twirp.NotFound, fmt.Sprintf("There was an error listing blogs: %v", find_err))
+	}
+
+	if find_err := cursor.All(context.TODO(), &results); find_err != nil {
+		fmt.Printf("error: %v", find_err)
+	}
+
+	blogs := []*blogProto.CreateBlogResponse{}
+
+	for _, result := range results {
+		blog := blogProto.CreateBlogResponse{
+			Id:      result.Id.Hex(),
+			Title:   result.Title,
+			Content: result.Content,
+		}
+		blogs = append(blogs, &blog)
+	}
+
+	return &blogProto.ListBlogResponse{
+		Blogs: blogs,
+	}, nil
 }
