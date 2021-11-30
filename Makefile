@@ -7,3 +7,6 @@ gen:
 
 serve:
 		go run main.go
+
+test:
+		go test ./server/server_test.go
