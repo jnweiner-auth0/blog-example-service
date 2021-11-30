@@ -1,0 +1,154 @@
+{
+	"info": {
+		"_postman_id": "2668b002-a924-4479-bc73-c58238b5182d",
+		"name": "Blog-Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "CreateBlog",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"\",\n    \"content\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5050/twirp/service.BlogService/CreateBlog",
+					"host": [
+						"localhost"
+					],
+					"port": "5050",
+					"path": [
+						"twirp",
+						"service.BlogService",
+						"CreateBlog"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetBlog",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5050/twirp/service.BlogService/GetBlog",
+					"host": [
+						"localhost"
+					],
+					"port": "5050",
+					"path": [
+						"twirp",
+						"service.BlogService",
+						"GetBlog"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "UpdateBlog",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"\",\n    \"title\": \"\",\n    \"content\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5050/twirp/service.BlogService/UpdateBlog",
+					"host": [
+						"localhost"
+					],
+					"port": "5050",
+					"path": [
+						"twirp",
+						"service.BlogService",
+						"UpdateBlog"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeleteBlog",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5050/twirp/service.BlogService/DeleteBlog",
+					"host": [
+						"localhost"
+					],
+					"port": "5050",
+					"path": [
+						"twirp",
+						"service.BlogService",
+						"DeleteBlog"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ListBlog",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"limit\": 0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:5050/twirp/service.BlogService/ListBlog",
+					"host": [
+						"localhost"
+					],
+					"port": "5050",
+					"path": [
+						"twirp",
+						"service.BlogService",
+						"ListBlog"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
