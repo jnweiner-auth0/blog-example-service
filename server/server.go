@@ -211,12 +211,49 @@ func (*Server) DeleteBlog(ctx context.Context, req *blogProto.DeleteBlogRequest)
 }
 
 func (*Server) ListBlog(ctx context.Context, req *blogProto.ListBlogRequest) (*blogProto.ListBlogResponse, error) {
-	filter := bson.D{}
 	limit := int64(25)
 
 	if req.GetLimit() > 0 {
 		limit = req.GetLimit()
 	}
+
+	// postgres variant
+
+	if config.Database == "postgres" {
+
+		sqlStatement := "SELECT * from blogs LIMIT $1"
+		rows, err := config.SqlDB.Query(sqlStatement, limit)
+		if err != nil {
+			return nil, twirp.NewError(twirp.NotFound, fmt.Sprintf("There was an error listing blogs: %v", err))
+		}
+		defer rows.Close()
+
+		blogs := []*blogProto.CreateBlogResponse{}
+
+		for rows.Next() {
+			var id int
+			var title string
+			var content string
+			err := rows.Scan(&id, &content, &title)
+			if err != nil {
+				return nil, twirp.NewError(twirp.NotFound, fmt.Sprintf("There was an error with blog id: %v, err: %v", id, err))
+			}
+			blog := blogProto.CreateBlogResponse{
+				Id:      strconv.Itoa(id),
+				Title:   title,
+				Content: content,
+			}
+			blogs = append(blogs, &blog)
+		}
+
+		return &blogProto.ListBlogResponse{
+			Blogs: blogs,
+		}, nil
+	}
+
+	// mongo variant
+
+	filter := bson.D{}
 
 	options := &options.FindOptions{
 		Limit: &limit,
