@@ -25,7 +25,7 @@ type BlogItem struct {
 
 // use the BlogService interface generated in service.twirp.go as guideline to stub out the expected functions
 // helpful Mongo driver docs: https://docs.mongodb.com/drivers/go/current/fundamentals/crud/
-// helpful Postgres walkthrough: https://www.calhoun.io/using-postgresql-with-go/
+// helpful Postgres walkthrough: https://www.calhoun.io/using-postgresql-with-go/ and docs https://pkg.go.dev/database/sql
 
 func (*Server) CreateBlog(ctx context.Context, req *blogProto.CreateBlogRequest) (*blogProto.CreateBlogResponse, error) {
 	data := &blogProto.CreateBlogRequest{
@@ -122,17 +122,40 @@ func (*Server) GetBlog(ctx context.Context, req *blogProto.GetBlogRequest) (*blo
 
 func (*Server) UpdateBlog(ctx context.Context, req *blogProto.UpdateBlogRequest) (*blogProto.UpdateBlogResponse, error) {
 	id := req.GetId()
+
+	newBlog := &blogProto.Blog{
+		Title:   req.GetTitle(),
+		Content: req.GetContent(),
+	}
+
+	// postgres variant
+
+	if config.Database == "postgres" {
+		sqlStatement := "UPDATE blogs SET title=$2, content=$3 WHERE id=$1"
+		result, err := config.SqlDB.Exec(sqlStatement, id, newBlog.Title, newBlog.Content)
+		if err != nil {
+			return nil, twirp.NewError(twirp.InvalidArgument, fmt.Sprintf("Blog id: %v could not be updated with %v, err: %v", id, newBlog, err))
+		}
+		rows, err := result.RowsAffected()
+		if err != nil || rows == 0 {
+			return nil, twirp.NewError(twirp.InvalidArgument, fmt.Sprintf("Blog id: %v could not be updated with %v, no matching rows", id, newBlog))
+		}
+
+		return &blogProto.UpdateBlogResponse{
+			Id:      id,
+			Title:   newBlog.Title,
+			Content: newBlog.Content,
+		}, nil
+	}
+
+	// mongo variant
+
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, twirp.NewError(twirp.InvalidArgument, "Invalid blog ID")
 	}
 
 	filter := bson.D{{Key: "_id", Value: oid}}
-
-	newBlog := &blogProto.Blog{
-		Title:   req.GetTitle(),
-		Content: req.GetContent(),
-	}
 
 	update := bson.D{{Key: "$set", Value: bson.M{"title": newBlog.Title, "content": newBlog.Content}}}
 
