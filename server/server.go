@@ -38,7 +38,7 @@ func (*Server) CreateBlog(ctx context.Context, req *blogProto.CreateBlogRequest)
 	if config.Database == "postgres" {
 		sqlStatement := "INSERT INTO blogs (title, content) VALUES ($1, $2) RETURNING id"
 		id := 0
-		err := config.SqlDB.QueryRow(sqlStatement, "test-title", "test-content").Scan(&id)
+		err := config.SqlDB.QueryRow(sqlStatement, data.Title, data.Content).Scan(&id)
 		if err != nil {
 			return nil, twirp.NewError(twirp.InvalidArgument, fmt.Sprintf("There was an error creating a blog: %v", err))
 		}
@@ -72,6 +72,29 @@ func (*Server) CreateBlog(ctx context.Context, req *blogProto.CreateBlogRequest)
 
 func (*Server) GetBlog(ctx context.Context, req *blogProto.GetBlogRequest) (*blogProto.GetBlogResponse, error) {
 	id := req.GetId()
+
+	// postgres variant
+
+	if config.Database == "postgres" {
+		var title string
+		var content string
+
+		sqlStatement := "SELECT title, content FROM blogs WHERE id=$1"
+
+		err := config.SqlDB.QueryRow(sqlStatement, id).Scan(&title, &content)
+		if err != nil {
+			return nil, twirp.NewError(twirp.NotFound, fmt.Sprintf("No documents were found for id: %v, err: %v", id, err))
+		}
+
+		return &blogProto.GetBlogResponse{
+			Id:      id,
+			Title:   title,
+			Content: content,
+		}, nil
+	}
+
+	// mongo variant
+
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, twirp.NewError(twirp.InvalidArgument, "Invalid blog ID")
