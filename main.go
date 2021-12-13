@@ -29,6 +29,7 @@ func startServer() {
 }
 
 func main() {
-	config.ConnectToDB()
+	config.ConnectToMongo()
+	config.ConnectToPostgres()
 	startServer()
 }
