@@ -173,6 +173,27 @@ func (*Server) UpdateBlog(ctx context.Context, req *blogProto.UpdateBlogRequest)
 
 func (*Server) DeleteBlog(ctx context.Context, req *blogProto.DeleteBlogRequest) (*blogProto.DeleteBlogResponse, error) {
 	id := req.GetId()
+
+	// postgres variant
+
+	if config.Database == "postgres" {
+		sqlStatement := "DELETE FROM blogs WHERE id=$1"
+		result, err := config.SqlDB.Exec(sqlStatement, id)
+		if err != nil {
+			return nil, twirp.NewError(twirp.InvalidArgument, fmt.Sprintf("Unable to delete blog with ID: %v, err: %v", id, err))
+		}
+		rows, err := result.RowsAffected()
+		if err != nil || rows == 0 {
+			return nil, twirp.NewError(twirp.InvalidArgument, fmt.Sprintf("Unable to delete blog with ID: %v, no matching rows", id))
+		}
+
+		return &blogProto.DeleteBlogResponse{
+			Id: id,
+		}, nil
+	}
+
+	// mongo variant
+
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, twirp.NewError(twirp.InvalidArgument, "Invalid blog ID")
