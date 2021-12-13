@@ -18,10 +18,6 @@ var Port = 5050
 var Collection *mongo.Collection
 var SqlDB *sql.DB
 
-// docs for reference:
-// https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.7.2/mongo
-// https://docs.mongodb.com/drivers/go/current/quick-start/
-
 func ConnectToDB(db string) {
 	Database = db
 	switch db {
@@ -33,6 +29,10 @@ func ConnectToDB(db string) {
 		ConnectToMongo()
 	}
 }
+
+// docs for reference:
+// https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.7.2/mongo
+// https://docs.mongodb.com/drivers/go/current/quick-start/
 
 func ConnectToMongo() {
 	fmt.Println("Connecting to MongoDB")
