@@ -13,12 +13,26 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var Database string
 var Port = 5050
 var Collection *mongo.Collection
+var SqlDB *sql.DB
 
 // docs for reference:
 // https://pkg.go.dev/go.mongodb.org/mongo-driver@v1.7.2/mongo
 // https://docs.mongodb.com/drivers/go/current/quick-start/
+
+func ConnectToDB(db string) {
+	Database = db
+	switch db {
+	case "mongo":
+		ConnectToMongo()
+	case "postgres":
+		ConnectToPostgres()
+	default:
+		ConnectToMongo()
+	}
+}
 
 func ConnectToMongo() {
 	fmt.Println("Connecting to MongoDB")
@@ -57,12 +71,13 @@ func ConnectToPostgres() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
 	err = db.Ping() // verifies connection to db, establishes connection if necessary
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	SqlDB = db
 
 	fmt.Println("Successfully connected to Postgres")
 }

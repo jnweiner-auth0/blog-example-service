@@ -8,6 +8,7 @@ import (
 	"blog-service/server"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 func startServer() {
@@ -29,7 +30,10 @@ func startServer() {
 }
 
 func main() {
-	config.ConnectToMongo()
-	config.ConnectToPostgres()
+	var db string = "mongo"
+	if len(os.Args) > 1 {
+		db = os.Args[1]
+	}
+	config.ConnectToDB(db)
 	startServer()
 }
