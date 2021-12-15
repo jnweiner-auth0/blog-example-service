@@ -8,5 +8,11 @@ gen:
 serve:
 		go run main.go
 
+mongo:
+		go run main.go mongo
+
+postgres:
+		go run main.go postgres
+
 test:
 		go test ./server/server_test.go
