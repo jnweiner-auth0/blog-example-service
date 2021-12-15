@@ -30,10 +30,10 @@ func startServer() {
 }
 
 func main() {
-	var db string = "mongo"
+	db := "mongo"
 	if len(os.Args) > 1 {
 		db = os.Args[1]
 	}
-	config.ConnectToDB(db)
+	config.SetDB(db)
 	startServer()
 }
